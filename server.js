@@ -1,25 +1,25 @@
 import express from "express";
 import path from "path";
-import { fileURLToPath } from "url";
-
-import hentaiRoute from "./routes/hentai.js"
-import endpointsRoute from "./routes/endpoints.js";;
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.use(express.static("public"));
+// serve folder public
+app.use(express.static(path.join(process.cwd(), "public")));
+
+// optional: route API
+import endpointsRouter from "./api/endpoints.js";
+app.use("/api/endpoints", endpointsRouter);
 
 app.get("/api/status", (req, res) => {
-    res.json({ status: "online" });
+  res.json({ status: "online" });
 });
-app.use("/api/endpoints", endpointsRoute);
 
-app.use("/api/hentai", hentaiRoute);
+// catch-all untuk SPA / fallback
+app.get("*", (req, res) => {
+  res.sendFile(path.join(process.cwd(), "public/index.html"));
+});
 
 app.listen(PORT, () => {
-    console.log(`Local server running at http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
