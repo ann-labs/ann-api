@@ -1,25 +1,23 @@
 import express from "express";
 import path from "path";
+import endpointsRouter from "./api/endpoints.js";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// serve folder public
+// Serve static public folder
 app.use(express.static(path.join(process.cwd(), "public")));
 
-// optional: route API
-import endpointsRouter from "./api/endpoints.js";
+// API routes
 app.use("/api/endpoints", endpointsRouter);
 
 app.get("/api/status", (req, res) => {
   res.json({ status: "online" });
 });
 
-// catch-all untuk SPA / fallback
+// Catch-all untuk index.html
 app.get("*", (req, res) => {
   res.sendFile(path.join(process.cwd(), "public/index.html"));
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// **Vercel expects default export**
+export default app;
