@@ -14,10 +14,10 @@ app.get("/api/status", (req, res) => {
   res.json({ status: "online" });
 });
 
-// Catch-all untuk index.html
+// Catch-all untuk SPA / index.html
 app.get("*", (req, res) => {
   res.sendFile(path.join(process.cwd(), "public/index.html"));
 });
 
-// **Vercel expects default export**
+// **export default app supaya Vercel bisa handle serverless**
 export default app;
