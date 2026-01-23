@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "script": {
-    "start": "node server.js"
+    "start": "node index.html"
   },
   "description": "Kurumi API by Xiao Ann",
   "author": "Xiao Ann",
