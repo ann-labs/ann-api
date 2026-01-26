@@ -1,16 +1,16 @@
 import express from "express";
 import { hentai } from "../controllers/hentai.js"
 
-const router = express.Router();
+export const config = {
+  runtime: "nodejs",
+};
 
-router.get("/", async (req, res) => {
+export default async function handler(req, res) {
   const result = await hentai();
 
   if (!result.status) {
     return res.status(500).json(result);
   }
 
-  res.json(result);
-});
-
-export default router;
+  res.status(200).json(result);
+}
