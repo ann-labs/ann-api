@@ -1,12 +1,16 @@
-// services/hentai.js
+// /api/hentai.js
 import axios from "axios";
 import * as cheerio from "cheerio";
+
+export const config = {
+  runtime: "nodejs",
+};
 
 const URL = "https://nekopoi.care/category/hentai/";
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
-export async function hentai() {
+export default async function handler(req, res) {
   try {
     const { data: html } = await axios.get(URL, {
       headers: {
@@ -15,7 +19,16 @@ export async function hentai() {
         Referer: URL,
       },
       timeout: 15000,
+      validateStatus: () => true,
     });
+
+    if (!html || html.length < 1000) {
+      return res.status(403).json({
+        status: false,
+        message: "Blocked by source",
+        data: [],
+      });
+    }
 
     const $ = cheerio.load(html);
     const results = [];
@@ -24,73 +37,24 @@ export async function hentai() {
       if (results.length >= 10) return false;
 
       const item = $(el);
-      const desc = item.find(".desc");
-
       const title = item.find("h2 a").text().trim();
       const link = item.find("h2 a").attr("href");
       const poster = item.find("img.wp-post-image").attr("src");
 
       if (!title || !link) return;
 
-      const sinopsis = desc
-        .find("p")
-        .filter((_, p) =>
-          $(p).prev().text().toLowerCase().includes("sinopsis")
-        )
-        .first()
-        .text()
-        .trim();
-
-      const genre = desc
-        .find('p:contains("Genre")')
-        .text()
-        .replace(/Genre\s*:\s*/i, "")
-        .trim();
-
-      const produser = desc
-        .find('p:contains("Producers")')
-        .text()
-        .replace(/Producers\s*:\s*/i, "")
-        .trim();
-
-      const durasi = desc
-        .find('p:contains("Duration")')
-        .text()
-        .replace(/Duration\s*:\s*/i, "")
-        .trim();
-
-      const size = desc
-        .find('p:contains("Size")')
-        .text()
-        .replace(/Size\s*:\s*/i, "")
-        .trim();
-
-      results.push({
-        title,
-        link,
-        poster,
-        sinopsis,
-        genre,
-        produser,
-        durasi,
-        size,
-      });
+      results.push({ title, link, poster });
     });
 
-    return {
+    res.status(200).json({
       status: true,
-      message: "Success",
       count: results.length,
-      source: "nekopoi.care",
-      timestamp: Date.now(),
       data: results,
-    };
+    });
   } catch (err) {
-    return {
+    res.status(500).json({
       status: false,
-      message: err.message || "Failed to fetch data",
-      count: 0,
-      data: [],
-    };
+      message: err.message,
+    });
   }
 }
